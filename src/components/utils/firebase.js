@@ -1,13 +1,7 @@
 // Import the functions you need from the SDKs you need
+
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import {
-  getAuth,
-  signOut,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  onAuthStateChanged,
-} from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import {
   getFirestore,
   collection,
@@ -19,6 +13,7 @@ import {
   deleteDoc,
   doc,
 } from "firebase/firestore";
+
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -36,6 +31,19 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+// onAuthStateChanged(auth, async (user) => {
+//   if (user) {
+//     //const recipeSnapshot = await getDocs(collection(db, "Recipes"));
+//     // const currUserData = await getDoc(doc(db, "users", user.uid));
+//     // let currUserDisplayName = currUserData.data().displayName;
+//     let currUserDisplayName = "";
+//     setupUI(user, currUserDisplayName);
+//     //setupRecipes(recipeSnapshot);
+//   } else {
+//     setupUI();
+//     //setupRecipes([]);
+//   }
+// });
