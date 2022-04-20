@@ -1,10 +1,9 @@
 import logo from "../img/logo.png";
-import Modal from "react-bootstrap/Modal";
 import React from "react";
 import { useAuth } from "../context/AuthContext";
 import { db } from "./utils/firebase";
 import { collection, addDoc, setDoc, updateDoc, doc } from "firebase/firestore";
-import { Alert } from "react-bootstrap";
+import { Alert, Modal } from "react-bootstrap";
 
 function Navbar() {
   const [loginShow, setLoginShow] = React.useState(false);
@@ -114,6 +113,7 @@ function Navbar() {
       await addDoc(collection(db, "Recipes"), {
         title: createForm["title"].value,
         ingredients: ingredientList,
+        user: currentUser.uid,
       });
       console.log("Recipe written to db");
       handleCreateClose();
@@ -129,7 +129,6 @@ function Navbar() {
     e.preventDefault();
     ingredientCount++;
     const ingredientList = document.querySelector(".createIngredientsList");
-    console.log(ingredientList);
     const li = document.createElement("li");
     li.innerHTML = `<input type="text" class="ingredientInput" id="ingredient${ingredientCount}"/>`;
     ingredientList.appendChild(li);
@@ -148,7 +147,6 @@ function Navbar() {
   async function handleChangeDisplayName(e) {
     e.preventDefault();
     const changeNameForm = document.querySelector("#change-name-form");
-    console.log(currentUser.uid);
     const newName = changeNameForm["new-name"].value;
     await updateDoc(doc(db, "users", currentUser.uid), {
       displayName: newName,

@@ -4,17 +4,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
-import {
-  collection,
-  onSnapshot,
-  getDocs,
-  getDoc,
-  addDoc,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-} from "firebase/firestore";
+import { onSnapshot, doc, collection, query, where } from "firebase/firestore";
 import React, { useContext, useEffect, useState } from "react";
 
 import { auth, db } from "../components/utils/firebase";
@@ -28,6 +18,7 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState();
   const [loading, setLoading] = useState(true);
   const [displayName, setDisplayName] = useState("");
+  const [recipes, setRecipes] = useState([]);
 
   function signup(email, password) {
     return createUserWithEmailAndPassword(auth, email, password);
@@ -45,9 +36,22 @@ export function AuthProvider({ children }) {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setLoading(false);
       setCurrentUser(user);
-      const unsub = onSnapshot(doc(db, "users", user.uid), (doc) => {
-        setDisplayName(doc.data().displayName);
-      });
+      if (user) {
+        onSnapshot(doc(db, "users", user.uid), (doc) => {
+          setDisplayName(doc.data().displayName);
+        });
+        const q = query(
+          collection(db, "Recipes"),
+          where("user", "==", user.uid)
+        );
+        onSnapshot(q, (querySnapshot) => {
+          const getRecipeData = [];
+          querySnapshot.forEach((doc) => {
+            getRecipeData.push(doc);
+          });
+          setRecipes(getRecipeData);
+        });
+      }
     });
     return unsubscribe;
   }, []);
@@ -55,6 +59,7 @@ export function AuthProvider({ children }) {
   const value = {
     currentUser,
     displayName,
+    recipes,
     signup,
     login,
     logout,

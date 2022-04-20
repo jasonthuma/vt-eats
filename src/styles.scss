@@ -27,3 +27,13 @@ legend {
   width: 95%;
   margin-bottom: 5px;
 }
+
+.recipeList {
+  margin-top: 95px;
+}
+
+.accordion-button:not(.collapsed) {
+  color: #ffffff;
+  background-color: #aaaaaa;
+  box-shadow: inset 0 -1px 0 rgb(0 0 0 / 13%);
+}
