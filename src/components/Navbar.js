@@ -84,6 +84,8 @@ function Navbar() {
           errorCode === "auth/invalid-email"
         ) {
           errorAlert = "Incorrect Username/Password, try again";
+        } else if (errorCode === "auth/user-not-found") {
+          errorAlert = "User not found, click Sign Up to create an account";
         }
         setLoginAlert(errorAlert);
       });
