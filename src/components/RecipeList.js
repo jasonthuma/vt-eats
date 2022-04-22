@@ -17,12 +17,17 @@ function RecipeList() {
   }
 
   let eventKey = -1;
+
   const recipeList = recipes.map((doc) => {
     const recipe = doc.data();
     eventKey++;
 
     return (
-      <Accordion.Item key={doc.id} eventKey={eventKey} className="bg-light">
+      <Accordion.Item
+        key={recipe.title}
+        eventKey={eventKey}
+        className="bg-light"
+      >
         <Accordion.Header>{recipe.title}</Accordion.Header>
         <Accordion.Body>
           <ul className="mb-0">
@@ -43,7 +48,9 @@ function RecipeList() {
       </Accordion.Item>
     );
   });
-
+  recipeList.sort((a, b) =>
+    a.key.toLowerCase().localeCompare(b.key.toLowerCase())
+  );
   return (
     <>
       <div className="recipeList text-center">
