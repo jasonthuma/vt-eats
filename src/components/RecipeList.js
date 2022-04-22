@@ -1,5 +1,5 @@
 import React from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../components/AuthHook";
 import { db } from "./utils/firebase";
 import { Accordion } from "react-bootstrap";
 import { deleteDoc, doc } from "firebase/firestore";
@@ -13,7 +13,6 @@ function RecipeList() {
 
   function handleDelete(e) {
     e.preventDefault();
-    console.log(e.target.id);
     deleteRecipe(e.target.id);
   }
 
@@ -27,8 +26,8 @@ function RecipeList() {
         <Accordion.Header>{recipe.title}</Accordion.Header>
         <Accordion.Body>
           <ul className="mb-0">
-            {recipe.ingredients.map((ingredient) => {
-              return <li>{ingredient}</li>;
+            {recipe.ingredients.map((ingredient, index) => {
+              return <li key={index}>{ingredient}</li>;
             })}
           </ul>
           <div className="text-center">
@@ -51,8 +50,10 @@ function RecipeList() {
         {currentUser && <p>Welcome {displayName}!</p>}
         {!currentUser && <h2>Log in to view recipes</h2>}
       </div>
-      <div className="container">
-        <Accordion>{currentUser && recipeList}</Accordion>
+      <div className="container d-flex justify-content-center">
+        <div className="col-10">
+          <Accordion>{currentUser && recipeList}</Accordion>
+        </div>
       </div>
     </>
   );

@@ -5,14 +5,10 @@ import {
   signOut,
 } from "firebase/auth";
 import { onSnapshot, doc, collection, query, where } from "firebase/firestore";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { auth, db } from "../components/utils/firebase";
-const AuthContext = React.createContext();
-
-export function useAuth() {
-  return useContext(AuthContext);
-}
+export const AuthContext = React.createContext();
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState();
@@ -36,6 +32,7 @@ export function AuthProvider({ children }) {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setLoading(false);
       setCurrentUser(user);
+
       if (user) {
         onSnapshot(doc(db, "users", user.uid), (doc) => {
           setDisplayName(doc.data().displayName);

@@ -8,8 +8,8 @@ function App() {
   return (
     <AuthProvider>
       <div className="App">
-        <Navbar />
-        <RecipeList />
+        <Navbar key="navbar" />
+        <RecipeList key="recipeList" />
       </div>
     </AuthProvider>
   );

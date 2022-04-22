@@ -1,6 +1,6 @@
 import logo from "../img/logo.png";
-import React from "react";
-import { useAuth } from "../context/AuthContext";
+import React, { useRef } from "react";
+import { useAuth } from "../components/AuthHook";
 import { db } from "./utils/firebase";
 import { collection, addDoc, setDoc, updateDoc, doc } from "firebase/firestore";
 import { Alert, Modal } from "react-bootstrap";
@@ -31,20 +31,34 @@ function Navbar() {
   const [loginAlert, setLoginAlert] = React.useState("");
   const { signup, login, currentUser, displayName, logout } = useAuth();
 
-  let errorAlert = "";
+  const loginEmailRef = useRef();
+  const loginPasswordRef = useRef();
+  const signUpEmailRef = useRef();
+  const signUpDisplayNameRef = useRef();
+  const signUpPasswordRef = useRef();
+  const createTitleRef = useRef();
+  const changeDisplayNameRef = useRef();
+
+  const [ingredients, setIngredients] = React.useState({ 0: "" });
+
   async function handleSignup(e) {
     e.preventDefault();
-
-    const signupForm = document.querySelector("#signup-form");
-    const email = signupForm["signup-email"].value;
-    const password = signupForm["signup-password"].value;
-    const display = signupForm["signup-display-name"].value;
+    const email = signUpEmailRef.current.value;
+    const password = signUpPasswordRef.current.value;
+    const display = signUpDisplayNameRef.current.value;
     //sign up the user
+
+    if (signUpDisplayNameRef.current.value === "") {
+      setSignupAlert("Display Name must be provided");
+      return;
+    }
 
     await signup(email, password)
       .then(async (userCredential) => {
         handleSignupClose();
-        signupForm.reset();
+        signUpEmailRef.value = "";
+        signUpPasswordRef.value = "";
+        signUpDisplayNameRef.value = "";
         setSignupAlert("");
         await setDoc(doc(db, "users", userCredential.user.uid), {
           displayName: display,
@@ -55,25 +69,24 @@ function Navbar() {
         console.log("code:", errorCode);
 
         if (errorCode === "auth/invalid-email") {
-          errorAlert = "Invalid Email, try again";
+          setSignupAlert("Invalid Email, try again");
         } else if (errorCode === "auth/email-already-in-use") {
-          errorAlert = "User already exists, try login instead";
+          setSignupAlert("User already exists, try login instead");
         } else if (errorCode === "auth/weak-password") {
-          errorAlert = "Password must be 8 characters minimum";
+          setSignupAlert("Password must be 8 characters minimum");
         }
-        setSignupAlert(errorAlert);
       });
   }
 
   async function handleLogin(e) {
     e.preventDefault();
-    const loginForm = document.querySelector("#login-form");
-    const email = loginForm["login-email"].value;
-    const password = loginForm["login-password"].value;
+    const email = loginEmailRef.current.value;
+    const password = loginPasswordRef.current.value;
     await login(email, password)
       .then((credential) => {
         handleLoginClose();
-        loginForm.reset();
+        loginEmailRef.value = "";
+        loginPasswordRef.value = "";
         setLoginAlert("");
       })
       .catch((error) => {
@@ -83,11 +96,10 @@ function Navbar() {
           errorCode === "auth/wrong-password" ||
           errorCode === "auth/invalid-email"
         ) {
-          errorAlert = "Incorrect Username/Password, try again";
+          setLoginAlert("Incorrect Username/Password, try again");
         } else if (errorCode === "auth/user-not-found") {
-          errorAlert = "User not found, click Sign Up to create an account";
+          setLoginAlert("User not found, click Sign Up to create an account");
         }
-        setLoginAlert(errorAlert);
       });
   }
 
@@ -102,54 +114,41 @@ function Navbar() {
 
   async function handleCreateRecipe(e) {
     e.preventDefault();
-    const createForm = document.querySelector("#create-form");
-    let userIngredientList = document.querySelectorAll(
-      ".createIngredientsList li"
-    );
     let ingredientList = [];
-    for (let i = 1; i <= userIngredientList.length; i++) {
-      let ingredient = document.getElementById(`ingredient${i}`).value;
-      ingredientList.push(ingredient);
+    for (const ingredient in ingredients) {
+      ingredientList.push(ingredients[ingredient]);
     }
     try {
       await addDoc(collection(db, "Recipes"), {
-        title: createForm["title"].value,
+        title: createTitleRef.current.value,
         ingredients: ingredientList,
         user: currentUser.uid,
       });
-      console.log("Recipe written to db");
       handleCreateClose();
-      createForm.reset();
-      //const recipeSnapshot = await getDocs(collection(db, "Recipes"));
-      //setupRecipes(recipeSnapshot);
+      createTitleRef.value = "";
+      setIngredients({ 0: "" });
     } catch (e) {
       console.error("Error adding recipe: ", e);
     }
   }
-  let ingredientCount = 1;
+
   function handleAddIngredient(e) {
     e.preventDefault();
-    ingredientCount++;
-    const ingredientList = document.querySelector(".createIngredientsList");
-    const li = document.createElement("li");
-    li.innerHTML = `<input type="text" class="ingredientInput" id="ingredient${ingredientCount}"/>`;
-    ingredientList.appendChild(li);
+    setIngredients({ ...ingredients, [Object.keys(ingredients).length]: "" });
   }
 
   function handleClearIngredients(e) {
     e.preventDefault();
-    ingredientCount = 1;
-    document.getElementById("ingList").innerHTML = "";
-    const ingredientList = document.querySelector(".createIngredientsList");
-    const li = document.createElement("li");
-    li.innerHTML = `<input type="text" class="ingredientInput" id="ingredient${ingredientCount}"/>`;
-    ingredientList.appendChild(li);
+    setIngredients({ 0: "" });
+  }
+
+  function handleIngredientChange(e) {
+    setIngredients({ ...ingredients, [e.target.id]: e.target.value });
   }
 
   async function handleChangeDisplayName(e) {
     e.preventDefault();
-    const changeNameForm = document.querySelector("#change-name-form");
-    const newName = changeNameForm["new-name"].value;
+    const newName = changeDisplayNameRef.current.value;
     await updateDoc(doc(db, "users", currentUser.uid), {
       displayName: newName,
     });
@@ -157,12 +156,16 @@ function Navbar() {
   }
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-light fixed-top">
-      <div className="container-fluid mx-5">
-        <a href="#" className="logo navbar-brand">
+    <nav
+      key="nav"
+      className="navbar navbar-expand-lg navbar-light bg-light fixed-top"
+    >
+      <div className="container">
+        <button key="logo" className="logo navbar-brand">
           <img src={logo} alt="logo" style={{ width: "100px" }} />
-        </a>
+        </button>
         <button
+          key="toggler"
           className="navbar-toggler"
           type="button"
           data-bs-toggle="collapse"
@@ -171,52 +174,47 @@ function Navbar() {
           <span className="navbar-toggler-icon"></span>
         </button>
         <div className="navbar-collapse collapse" id="navbar">
-          <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
+          <ul key="menubtns" className="navbar-nav ms-auto mb-2 mb-lg-0">
             {currentUser && (
-              <li className="nav-item logged-in">
-                <a href="#" className="nav-link" onClick={handleAccountShow}>
+              <li className="nav-item logged-in" key="1">
+                <button className="nav-link" onClick={handleAccountShow}>
                   Account
-                </a>
+                </button>
               </li>
             )}
             {currentUser && (
-              <li className="nav-item logged-in">
-                <a
-                  href="#"
-                  id="logout"
-                  className="nav-link"
-                  onClick={handleLogout}
-                >
+              <li className="nav-item logged-in" key="2">
+                <button id="logout" className="nav-link" onClick={handleLogout}>
                   Logout
-                </a>
+                </button>
               </li>
             )}
             {currentUser && (
-              <li className="nav-item logged-in">
-                <a href="#" className="nav-link" onClick={handleCreateShow}>
+              <li className="nav-item logged-in" key="3">
+                <button className="nav-link" onClick={handleCreateShow}>
                   Create Recipe
-                </a>
+                </button>
               </li>
             )}
             {!currentUser && (
-              <li className="nav-item logged-out">
-                <a href="#" className="nav-link" onClick={handleLoginShow}>
+              <li className="nav-item logged-out" key="4">
+                <button className="nav-link" onClick={handleLoginShow}>
                   Login
-                </a>
+                </button>
               </li>
             )}
             {!currentUser && (
-              <li className="nav-item logged-out">
-                <a href="#" className="nav-link" onClick={handleSignupShow}>
+              <li className="nav-item logged-out" key="5">
+                <button className="nav-link" onClick={handleSignupShow}>
                   Sign Up
-                </a>
+                </button>
               </li>
             )}
           </ul>
         </div>
       </div>
 
-      <Modal show={createShow} onHide={handleCreateClose}>
+      <Modal key="create" show={createShow} onHide={handleCreateClose}>
         <Modal.Header closeButton>Create New Recipe</Modal.Header>
         <Modal.Body>
           <form id="create-form">
@@ -224,7 +222,13 @@ function Navbar() {
               <label htmlFor="title" className="form-label">
                 Recipe Name
               </label>
-              <input type="text" className="form-control" id="title" required />
+              <input
+                type="text"
+                className="form-control"
+                id="title"
+                ref={createTitleRef}
+                required
+              />
             </div>
             <div className="input-field mb-3">
               <fieldset className="form-group border">
@@ -244,16 +248,19 @@ function Navbar() {
                       Clear Ingredients
                     </button>
                   </div>
-                  <ol className="createIngredientsList" id="ingList">
-                    <li>
-                      <input
-                        type="text"
-                        id="ingredient1"
-                        className="ingredientInput"
-                        required
-                      />
-                    </li>
-                  </ol>
+                  <ul>
+                    {Object.keys(ingredients).map((i) => (
+                      <li>
+                        <input
+                          type="text"
+                          className="ingredientInput"
+                          key={i}
+                          id={i}
+                          onChange={handleIngredientChange}
+                        />
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </fieldset>
             </div>
@@ -264,7 +271,7 @@ function Navbar() {
         </Modal.Body>
       </Modal>
 
-      <Modal show={accountShow} onHide={handleAccountClose}>
+      <Modal key="account" show={accountShow} onHide={handleAccountClose}>
         <Modal.Header closeButton>Account Details</Modal.Header>
         <Modal.Body className="text-center">
           <div className="account-details">
@@ -280,7 +287,7 @@ function Navbar() {
         </Modal.Body>
       </Modal>
 
-      <Modal show={loginShow} onHide={handleLoginClose}>
+      <Modal key="login" show={loginShow} onHide={handleLoginClose}>
         <Modal.Header closeButton>Login</Modal.Header>
         <Modal.Body>
           {loginAlert && <Alert variant="danger">{loginAlert}</Alert>}
@@ -293,6 +300,7 @@ function Navbar() {
                 type="email"
                 className="form-control"
                 id="login-email"
+                ref={loginEmailRef}
                 required
               />
             </div>
@@ -304,6 +312,7 @@ function Navbar() {
                 type="password"
                 className="form-control"
                 id="login-password"
+                ref={loginPasswordRef}
                 required
               />
             </div>
@@ -318,7 +327,7 @@ function Navbar() {
         </Modal.Body>
       </Modal>
 
-      <Modal show={signupShow} onHide={handleSignupClose}>
+      <Modal key="signup" show={signupShow} onHide={handleSignupClose}>
         <Modal.Header closeButton>Sign up</Modal.Header>
         <Modal.Body>
           {signupAlert && <Alert variant="danger">{signupAlert}</Alert>}
@@ -331,6 +340,7 @@ function Navbar() {
                 type="email"
                 className="form-control"
                 id="signup-email"
+                ref={signUpEmailRef}
                 required
               />
             </div>
@@ -342,6 +352,7 @@ function Navbar() {
                 type="text"
                 className="form-control"
                 id="signup-display-name"
+                ref={signUpDisplayNameRef}
                 required
               />
             </div>
@@ -354,6 +365,7 @@ function Navbar() {
                 id="signup-password"
                 className="form-control"
                 minLength={8}
+                ref={signUpPasswordRef}
                 required
               />
             </div>
@@ -368,7 +380,11 @@ function Navbar() {
         </Modal.Body>
       </Modal>
 
-      <Modal show={changeDisplayNameShow} onHide={handleChangeDisplayNameClose}>
+      <Modal
+        key="changename"
+        show={changeDisplayNameShow}
+        onHide={handleChangeDisplayNameClose}
+      >
         <Modal.Header closeButton>Change Display Name</Modal.Header>
         <Modal.Body className="text-center">
           <form id="change-name-form">
@@ -378,6 +394,7 @@ function Navbar() {
                 type="text"
                 id="new-name"
                 className="form-control"
+                ref={changeDisplayNameRef}
                 required
               />
             </div>
