@@ -22,7 +22,7 @@ function RecipeList() {
     eventKey++;
 
     return (
-      <Accordion.Item eventKey={eventKey} className="bg-light">
+      <Accordion.Item key={doc.id} eventKey={eventKey} className="bg-light">
         <Accordion.Header>{recipe.title}</Accordion.Header>
         <Accordion.Body>
           <ul className="mb-0">

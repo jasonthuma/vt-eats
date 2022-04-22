@@ -156,16 +156,12 @@ function Navbar() {
   }
 
   return (
-    <nav
-      key="nav"
-      className="navbar navbar-expand-lg navbar-light bg-light fixed-top"
-    >
+    <nav className="navbar navbar-expand-lg navbar-light bg-light fixed-top">
       <div className="container">
-        <button key="logo" className="logo navbar-brand">
+        <button className="logo navbar-brand">
           <img src={logo} alt="logo" style={{ width: "100px" }} />
         </button>
         <button
-          key="toggler"
           className="navbar-toggler"
           type="button"
           data-bs-toggle="collapse"
@@ -174,7 +170,7 @@ function Navbar() {
           <span className="navbar-toggler-icon"></span>
         </button>
         <div className="navbar-collapse collapse" id="navbar">
-          <ul key="menubtns" className="navbar-nav ms-auto mb-2 mb-lg-0">
+          <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
             {currentUser && (
               <li className="nav-item logged-in" key="1">
                 <button className="nav-link" onClick={handleAccountShow}>
@@ -214,7 +210,7 @@ function Navbar() {
         </div>
       </div>
 
-      <Modal key="create" show={createShow} onHide={handleCreateClose}>
+      <Modal show={createShow} onHide={handleCreateClose}>
         <Modal.Header closeButton>Create New Recipe</Modal.Header>
         <Modal.Body>
           <form id="create-form">
@@ -248,14 +244,15 @@ function Navbar() {
                       Clear Ingredients
                     </button>
                   </div>
-                  <ul>
+                  <ul key="ingredientslist">
                     {Object.keys(ingredients).map((i) => (
-                      <li>
+                      <li key={i + 35}>
                         <input
                           type="text"
                           className="ingredientInput"
                           key={i}
-                          id={i}
+                          id={"ingredient" + i}
+                          data-testid={"ingredient" + i}
                           onChange={handleIngredientChange}
                         />
                       </li>
@@ -271,7 +268,7 @@ function Navbar() {
         </Modal.Body>
       </Modal>
 
-      <Modal key="account" show={accountShow} onHide={handleAccountClose}>
+      <Modal show={accountShow} onHide={handleAccountClose}>
         <Modal.Header closeButton>Account Details</Modal.Header>
         <Modal.Body className="text-center">
           <div className="account-details">
@@ -287,7 +284,7 @@ function Navbar() {
         </Modal.Body>
       </Modal>
 
-      <Modal key="login" show={loginShow} onHide={handleLoginClose}>
+      <Modal show={loginShow} onHide={handleLoginClose}>
         <Modal.Header closeButton>Login</Modal.Header>
         <Modal.Body>
           {loginAlert && <Alert variant="danger">{loginAlert}</Alert>}
@@ -327,7 +324,7 @@ function Navbar() {
         </Modal.Body>
       </Modal>
 
-      <Modal key="signup" show={signupShow} onHide={handleSignupClose}>
+      <Modal show={signupShow} onHide={handleSignupClose}>
         <Modal.Header closeButton>Sign up</Modal.Header>
         <Modal.Body>
           {signupAlert && <Alert variant="danger">{signupAlert}</Alert>}
@@ -380,11 +377,7 @@ function Navbar() {
         </Modal.Body>
       </Modal>
 
-      <Modal
-        key="changename"
-        show={changeDisplayNameShow}
-        onHide={handleChangeDisplayNameClose}
-      >
+      <Modal show={changeDisplayNameShow} onHide={handleChangeDisplayNameClose}>
         <Modal.Header closeButton>Change Display Name</Modal.Header>
         <Modal.Body className="text-center">
           <form id="change-name-form">

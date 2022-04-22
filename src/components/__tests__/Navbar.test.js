@@ -61,9 +61,78 @@ it("shows the account details if the account button is clicked", async () => {
   const accountLink = screen.getByText("Account");
 
   fireEvent.click(accountLink);
-  await waitFor(() => expect(screen.getByText("Logged in as test@test.com")));
-  await waitFor(() => expect(screen.getByText("Current Display Name: test")));
+  expect(screen.getByText("Logged in as test@test.com")).toBeInTheDocument();
+  expect(screen.getByText("Current Display Name: test")).toBeInTheDocument();
   const changeDisplayNameBtn = screen.getByText("Change Display Name");
   fireEvent.click(changeDisplayNameBtn);
-  await waitFor(() => expect(screen.getByText("Enter New Name")));
+  expect(screen.getByText("Enter New Name")).toBeInTheDocument();
+});
+
+it("shows the create recipe modal if the create recipe button is clicked", async () => {
+  jest.spyOn(hooks, "useAuth").mockImplementation(() => ({
+    signup: jest.fn(),
+    login: jest.fn(),
+    currentUser: {
+      uid: "1",
+      email: "test@test.com",
+    },
+    displayName: "test",
+    logout: jest.fn(),
+  }));
+  render(<Navbar />);
+
+  const createLink = screen.getByText("Create Recipe");
+
+  fireEvent.click(createLink);
+  expect(screen.getByText("Create New Recipe")).toBeInTheDocument();
+
+  const addIngredient = screen.getByText("Add Ingredient");
+  expect(addIngredient).toBeInTheDocument();
+});
+
+it("adds a new ingredient input each time the add ingredient button is clicked", async () => {
+  jest.spyOn(hooks, "useAuth").mockImplementation(() => ({
+    signup: jest.fn(),
+    login: jest.fn(),
+    currentUser: {
+      uid: "1",
+      email: "test@test.com",
+    },
+    displayName: "test",
+    logout: jest.fn(),
+  }));
+  render(<Navbar />);
+
+  const createLink = screen.getByText("Create Recipe");
+  fireEvent.click(createLink);
+  const addIngredient = screen.getByText("Add Ingredient");
+  expect(screen.queryByTestId("ingredient1")).toBeNull();
+  fireEvent.click(addIngredient);
+  expect(screen.getByTestId("ingredient1")).toBeInTheDocument();
+  fireEvent.click(addIngredient);
+  expect(screen.getByTestId("ingredient2")).toBeInTheDocument();
+});
+
+it("clears and resets the ingredients when the clear ingredients button is clicked", async () => {
+  jest.spyOn(hooks, "useAuth").mockImplementation(() => ({
+    signup: jest.fn(),
+    login: jest.fn(),
+    currentUser: {
+      uid: "1",
+      email: "test@test.com",
+    },
+    displayName: "test",
+    logout: jest.fn(),
+  }));
+  render(<Navbar />);
+
+  const createLink = screen.getByText("Create Recipe");
+  fireEvent.click(createLink);
+  const addIngredient = screen.getByText("Add Ingredient");
+  fireEvent.click(addIngredient);
+  fireEvent.click(addIngredient);
+  expect(screen.getByTestId("ingredient2")).toBeInTheDocument();
+  const clearIngredients = screen.getByText("Clear Ingredients");
+  fireEvent.click(clearIngredients);
+  expect(screen.queryByTestId("ingredient2")).toBeNull();
 });
