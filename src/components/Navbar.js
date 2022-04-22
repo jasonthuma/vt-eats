@@ -144,6 +144,7 @@ function Navbar() {
 
   function handleIngredientChange(e) {
     setIngredients({ ...ingredients, [e.target.id]: e.target.value });
+    console.log(ingredients);
   }
 
   async function handleChangeDisplayName(e) {
@@ -246,12 +247,11 @@ function Navbar() {
                   </div>
                   <ul key="ingredientslist">
                     {Object.keys(ingredients).map((i) => (
-                      <li key={i + 35}>
+                      <li key={i}>
                         <input
                           type="text"
                           className="ingredientInput"
-                          key={i}
-                          id={"ingredient" + i}
+                          id={i}
                           data-testid={"ingredient" + i}
                           onChange={handleIngredientChange}
                         />
